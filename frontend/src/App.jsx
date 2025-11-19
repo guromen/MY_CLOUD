@@ -5,6 +5,7 @@ import Register from './components/Register'
 import Login from './components/Login'
 import About from './components/About'
 import { Routes, Route, useLocation} from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   const location = useLocation()
@@ -22,7 +23,7 @@ function App() {
           <Navbar 
             content={
               <Routes>
-                <Route>      
+                <Route element={<ProtectedRoute/>}>      
                   <Route path='/home' element={<Home/>}/>
                   <Route path='/about' element={<About/>}/> 
                 </Route>

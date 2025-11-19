@@ -4,53 +4,83 @@ import MyTextField from './forms/MyTextField'
 import MyPassField from './forms/MyPassField'
 import MyButton from './forms/MyButton'
 import { Link } from 'react-router-dom'
+import {useForm} from 'react-hook-form'
+import AxiosInstance from './AxiosInstance'
+import { useNavigate } from 'react-router-dom'
 
 const Register = () => {
+    const navigate = useNavigate()
+    const {handleSubmit, control} = useForm()
+
+    const submission = (data) => {
+        AxiosInstance.post(`register/`, {
+            email: data.email,
+            password: data.password
+        })
+        .then(() => {
+            navigate(`/`) //перенаправляет на страницу login page
+        }) 
+    }
     return (
        <div className="backgroundLogin">
-        <Box className='loginBox'>
 
-            <Box className='itemBox'>
-                <Box className='title'>Регистрация</Box>
-            </Box>
-
-            <Box className={"itemBox"}>
-                    <MyTextField
-                        label={"Username"}                        
-                    />
-            </Box>
-
-            <Box className={"itemBox"}>
-                <MyTextField
-                label={"Fullname"}
+        <form onSubmit={handleSubmit(submission)}>
                 
-                />
-            </Box>
+               
+                <Box className={"loginBox"}>
 
-            <Box className={"itemBox"}>
-                <MyTextField
-                    label={"Email"}                        
-                />
-            </Box>
+                    <Box className={"itemBox"}>
+                        <Box className={"title"}> User registration </Box>
+                    </Box>
 
-            <Box className={"itemBox"}>
-                <MyPassField
-                    label={"Password"}
-                />
-            </Box>
+                    <Box className={"itemBox"}>
+                        <MyTextField
+                        label={"Username"}
+                        name={"username"}
+                        control={control}
+                        />
+                    </Box>
 
-            
-            <Box className={"itemBox"}>
-                <MyButton                          
-                    label={"Register"}
-                />
-            </Box>
+                    <Box className={"itemBox"}>
+                        <MyTextField
+                        label={"Fullname"}
+                        name={"fullname"}
+                        control={control}
+                        />
+                    </Box>
 
-            <Box className={"itemBox"}>
-                <Link to="/"> Уже зарегистрированы? Войдите! </Link>
-            </Box>
+                    <Box className={"itemBox"}>
+                        <MyTextField
+                        label={"Email"}
+                        name ={"email"}
+                        control={control}
+                        />
+                    </Box>
 
-        </Box>
+                    <Box className={"itemBox"}>
+                        <MyPassField
+                        label={"Password"}
+                        name={"password"}
+                        control={control}
+                        />
+                    </Box>
+
+                    
+                    <Box className={"itemBox"}>
+                        <MyButton 
+                            type={"submit"}
+                            label={"Register"}
+                        />
+                    </Box>
+
+                    <Box className={"itemBox"}>
+                        <Link to="/"> Already registered? Please login! </Link>
+                    </Box>
+
+
+                </Box>
+
+            </form>
        
        </div> 
     )
