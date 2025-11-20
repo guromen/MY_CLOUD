@@ -7,10 +7,27 @@ import { Link } from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import AxiosInstance from './AxiosInstance'
 import { useNavigate } from 'react-router-dom'
+import {yupResolver} from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 
 const Register = () => {
     const navigate = useNavigate()
-    const {handleSubmit, control} = useForm()
+
+    const checkRegister = yup
+    .object({
+        email: yup.string().email('Поле ожидает адрес электронной почты')
+                    .required('Введите email'),
+        password: yup.string()
+                    .required('Введите пароль')
+                    .min(6,'Пароль должен содержать минимум 6 символов')
+                    .matches(/[A-Z]/,'Пароль должен содержать хотя бы одну заглавную букву')
+                    .matches(/[0-9]/,'Пароль должен содержать хотя бы одну цифру')
+                    .matches(/[!@#$%^&*(),.?":;{}|<>+]/, 'Пароль должен содержать хотя бы один спецсимвол'),
+        username: yup.string().matches(/^[A-Za-z][A-Za-z0-9]{3,19}$/,"Username должен начинаться с буквы и содержать только латинские буквы и цифры (4–20 символов)")
+                    .required("Введите логин"),
+
+    })  
+    const {handleSubmit, control} = useForm({resolver:yupResolver(checkRegister)})
 
     const submission = (data) => {
         AxiosInstance.post(`register/`, {
@@ -30,7 +47,7 @@ const Register = () => {
                 <Box className={"loginBox"}>
 
                     <Box className={"itemBox"}>
-                        <Box className={"title"}> User registration </Box>
+                        <Box className={"title"}> Зарегистрируйтесь </Box>
                     </Box>
 
                     <Box className={"itemBox"}>
@@ -74,7 +91,7 @@ const Register = () => {
                     </Box>
 
                     <Box className={"itemBox"}>
-                        <Link to="/"> Already registered? Please login! </Link>
+                        <Link to="/"> Уже зарегистрированы? Войдите! </Link>
                     </Box>
 
 

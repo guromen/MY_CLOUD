@@ -1,4 +1,5 @@
 import '../App.css'
+import { useState } from 'react'
 import { Box } from '@mui/material'
 import MyTextField from './forms/MyTextField'
 import MyPassField from './forms/MyPassField'
@@ -7,10 +8,12 @@ import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import AxiosInstance from './AxiosInstance'
 import { useNavigate } from 'react-router-dom'
+import Message from './forms/Message'
 
 const Login = () => {
     const {handleSubmit, control} = useForm()
     const navigate = useNavigate()
+    const [showMessage, setShowMessage] = useState(false)
 
     const submission = (data) => {
         AxiosInstance.post(`login/`, {
@@ -23,12 +26,15 @@ const Login = () => {
             navigate(`/home`)
         })
         .catch((error)=>{
+            setShowMessage(true)
             console.error('Ошибка при логине', error)
         })
     }
 
     return (
        <div className="backgroundLogin">
+        {showMessage ? <Message text={'Пароль или email не совпадают'} /> : null}
+
         <form onSubmit={handleSubmit(submission)}>
             <Box className='loginBox'>
                 <Box className='itemBox'>
@@ -56,7 +62,7 @@ const Login = () => {
                             />
                         </Box>
                         <Box className='itemBox'>
-                            <Link to={'/register'}>Нет аккаунта? Пожалуйста, зарегистрируйтесь!</Link>
+                            <Link to={'/register'}>Нет аккаунта? Зарегистрируйтесь!</Link>
                 </Box>
 
             </Box>

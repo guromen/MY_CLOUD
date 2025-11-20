@@ -14,6 +14,8 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import InfoIcon from '@mui/icons-material/Info';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { Link, useLocation } from 'react-router-dom'
+import AxiosInstance from './AxiosInstance';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -21,6 +23,17 @@ export default function Navbar(props) {
     const {content}=props
     const location = useLocation()
     const path = location.pathname
+    const navigate = useNavigate()
+
+    const userLogout = ()=> {
+      AxiosInstance.post(`logoutall/`, {})
+      .then(()=>{
+        localStorage.removeItem('Token')
+        console.log('токен удален')
+        navigate('/')
+      })      
+    }
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -64,7 +77,7 @@ export default function Navbar(props) {
           </List>
           <Divider />
           <ListItem key={3} disablePadding>
-                <ListItemButton >
+                <ListItemButton onClick={userLogout}>
                   <ListItemIcon>
                   <ExitToAppIcon />
                   </ListItemIcon>
