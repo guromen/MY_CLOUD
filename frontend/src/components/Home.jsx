@@ -1,42 +1,27 @@
-import AxiosInstance from './AxiosInstance'
-import {useEffect, useState} from 'react'
-import {Box} from '@mui/material'
+import { useEffect, useState } from "react";
+import AxiosInstance from "./AxiosInstance";
+import UserHome from "./UserHome";
 
-const Home = () =>{
+const Home = () => {
+  const [currentUser, setCurrentUser] = useState(null);
 
-    const [myData, setMyData] = useState()
-    const [loading,setLoading] = useState(true)
+  useEffect(() => {
+    AxiosInstance.get("users/me/")
+      .then((res) => {
+        setCurrentUser(res.data)
+        console.log(currentUser)
 
-    const getData = () => {
-        AxiosInstance.get(`users/`).then((res) =>{
-            setMyData(res.data)
-            console.log(res.data)
-            setLoading(false)
-        })
-    }
+      })
+      .catch(console.error);
+      
+  }, []);
 
-    useEffect(() =>{
-        getData();
-    },[])
+  if (!currentUser) return <p>Загрузка...</p>;
 
-    return(
-        <div> 
-            { loading ? <p>Loading data...</p> :
-            <div> 
-                {myData.map((item, index) => (
-                    <Box key={index} sx={{boxShadow:3}}>
-                        <div> ID: {item.id}</div>
-                        <div> Email: {item.email} </div>
-                    </Box>
-                )
-                )}
+  // Если пользователь не админ — просто показываем UserHome
 
-            </div>
+    return <UserHome currentUser={currentUser} />;
+  }
 
-            }
-        </div>
-    )
 
-}
-
-export default Home
+export default Home;

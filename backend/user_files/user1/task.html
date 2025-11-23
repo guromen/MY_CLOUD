@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JS-Трекер обучения (6 месяцев)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 1rem;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .month-selector, .week-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.4rem 1rem;
+      border: none;
+      background: #ddd;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button.active {
+      background: #007bff;
+      color: white;
+    }
+    .tasks {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+    }
+    .task {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .task input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+    textarea {
+      width: 100%;
+      height: 60px;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <h1>📘 JS-Трекер — 6 месяцев обучения</h1>
+  <div class="month-selector" id="monthSelector"></div>
+  <div class="week-selector" id="weekSelector"></div>
+  <div class="tasks" id="tasksContainer"></div>
+
+  <script>
+    const months = ["Месяц 1", "Месяц 2", "Месяц 3", "Месяц 4", "Месяц 5", "Месяц 6"];
+    const weeks = ["Неделя 1", "Неделя 2", "Неделя 3", "Неделя 4"];
+
+    const fullPlan = {
+      "Месяц 1": {
+        "Неделя 1": [
+          "Изучить let/const и типы данных",
+          "Создать переменные разных типов",
+          "Решить 3 задачи на переменные"
+        ],
+        "Неделя 2": [
+          "Изучить условия if/else и switch",
+          "Написать 2 сценария с условиями",
+          "Решить задачи на условия"
+        ],
+        "Неделя 3": [
+          "Изучить циклы for/while",
+          "Практика на числовые последовательности",
+          "Сделать мини-программу: сумма чисел"
+        ],
+        "Неделя 4": [
+          "Изучить функции",
+          "Написать функции с параметрами",
+          "Мини-проект: калькулятор"
+        ]
+      },
+      "Месяц 2": {
+        "Неделя 1": ["Введение в DOM", "querySelector, innerText, innerHTML", "Создать простую интерактивную страницу"],
+        "Неделя 2": ["События: click, input", "Сделать форму с обработкой", "Мини-форма с валидацией"],
+        "Неделя 3": ["Манипуляции DOM через JS", "Показ/скрытие блоков, классы", "Интерактивный таймер или кнопка"],
+        "Неделя 4": ["Проект: To-do List", "Фильтрация задач", "Удаление, добавление, стили"]
+      },
+      "Месяц 3": {
+        "Неделя 1": ["Методы массивов: map, filter, reduce", "Работа с массивами объектов", "Примеры с задачами"],
+        "Неделя 2": ["Деструктуризация, spread/rest", "Копирование массивов и объектов", "Задачи на вложенность"],
+        "Неделя 3": ["Объекты: вложенность, циклы", "for...in, Object.keys", "Реализация корзины товаров"],
+        "Неделя 4": ["Мини-проект: фильтр товаров", "Сортировка и отображение", "Стилизация под таблицу"]
+      },
+      "Месяц 4": {
+        "Неделя 1": ["setTimeout, setInterval", "Таймер/часики на странице", "Задержки и паузы"],
+        "Неделя 2": ["Fetch API", "Получить данные с сервера", "Работа с JSON"],
+        "Неделя 3": ["async/await", "Обработка ошибок (try/catch)", "Практика с API (например, погода)"],
+        "Неделя 4": ["Проект: погода/профили GitHub", "Работа с API + отображение", "Стилизация"]
+      },
+      "Месяц 5": {
+        "Неделя 1": ["HTML: структура, формы, атрибуты", "CSS: селекторы, Flexbox", "Вёрстка простой страницы"],
+        "Неделя 2": ["Работа со стилями и JS", "Адаптивность, классы", "Мини-сайт с интерактивом"],
+        "Неделя 3": ["Проект: лендинг/портфолио", "Стили + JS логика", "Заливка в GitHub Pages"] ,
+        "Неделя 4": ["Анимации CSS и JS", "Работа с событиями прокрутки", "Украшения и UX"]
+      },
+      "Месяц 6": {
+        "Неделя 1": ["Повторение основ JS", "Углубление в слабые темы", "Тестовые задачи на Codewars"] ,
+        "Неделя 2": ["Основы Git", "git init, add, commit", "GitHub и загрузка проекта"] ,
+        "Неделя 3": ["Мини-проект с использованием localStorage", "To-do или заметки", "Сохранение данных"] ,
+        "Неделя 4": ["Финальный проект (на выбор)", "Проверка и рефакторинг", "Подготовка портфолио"]
+      }
+    };
+
+    const monthSelector = document.getElementById("monthSelector");
+    const weekSelector = document.getElementById("weekSelector");
+    const tasksContainer = document.getElementById("tasksContainer");
+
+    let activeMonth = months[0];
+    let activeWeek = weeks[0];
+
+    function saveProgress(month, week, index, checked) {
+      const key = `progress_${month}_${week}`;
+      const data = JSON.parse(localStorage.getItem(key)) || {};
+      data[index] = checked;
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function saveNotes(month, week, notes) {
+      localStorage.setItem(`notes_${month}_${week}`, notes);
+    }
+
+    function loadProgress(month, week) {
+      return JSON.parse(localStorage.getItem(`progress_${month}_${week}`)) || {};
+    }
+
+    function loadNotes(month, week) {
+      return localStorage.getItem(`notes_${month}_${week}`) || "";
+    }
+
+    function renderSelectors() {
+      monthSelector.innerHTML = "";
+      months.forEach(m => {
+        const btn = document.createElement("button");
+        btn.textContent = m;
+        if (m === activeMonth) btn.classList.add("active");
+        btn.onclick = () => {
+          activeMonth = m;
+          activeWeek = weeks[0];
+          renderSelectors();
+          renderTasks();
+        };
+        monthSelector.appendChild(btn);
+      });
+
+      weekSelector.innerHTML = "";
+      weeks.forEach(w => {
+        const btn = document.createElement("button");
+        btn.textContent = w;
+        if (w === activeWeek) btn.classList.add("active");
+        btn.onclick = () => {
+          activeWeek = w;
+          renderSelectors();
+          renderTasks();
+        };
+        weekSelector.appendChild(btn);
+      });
+    }
+
+    function renderTasks() {
+      tasksContainer.innerHTML = "";
+      const tasks = fullPlan[activeMonth]?.[activeWeek] || [];
+      const progress = loadProgress(activeMonth, activeWeek);
+
+      tasks.forEach((task, i) => {
+        const div = document.createElement("div");
+        div.className = "task";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = progress[i] || false;
+        checkbox.onchange = () => saveProgress(activeMonth, activeWeek, i, checkbox.checked);
+        div.appendChild(checkbox);
+        div.append(task);
+        tasksContainer.appendChild(div);
+      });
+
+      const notes = document.createElement("textarea");
+      notes.placeholder = "Что понял? Что вызвало трудности?";
+      notes.value = loadNotes(activeMonth, activeWeek);
+      notes.oninput = () => saveNotes(activeMonth, activeWeek, notes.value);
+      tasksContainer.appendChild(notes);
+    }
+
+    renderSelectors();
+    renderTasks();
+  </script>
+</body>
+</html>
+
+<!-- 📌 Задача: Подсчет кликов по кнопке
+Создай HTML-страницу с кнопкой. Каждый раз, когда пользователь нажимает на кнопку, на экране должно отображаться, сколько раз её нажали.
+🧠 Условия:
+В HTML есть:
+Кнопка с id clickBtn
+Параграф с id countDisplay
+В JavaScript:
+Сделай счётчик (например, переменная count)
+При каждом клике обновляй текст в countDisplay (например, "Вы нажали 3 раза")
+💡 Примерный HTML:
+<button id="clickBtn">Нажми меня</button>
+<p id="countDisplay">Вы нажали 0 раз</p>
+🔧 Что должен делать JS:
+Использовать document.getElementById или querySelector
+Добавить обработчик события click
+Увеличивать переменную
+Обновлять текст в <p> -->

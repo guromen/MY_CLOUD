@@ -5,6 +5,9 @@ from .serializers import *
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model, authenticate
 from knox.models import AuthToken
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import JSONParser
 
 User = get_user_model()
 
@@ -53,3 +56,22 @@ class UserViewset(viewsets.ViewSet):
         queryset = User.objects.all()
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
+    
+    #  Эндпоинт /users/me/
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        serializer = UserListSerializer(request.user)
+        return Response(serializer.data)
+    
+
+class UserFileViewSet(viewsets.ModelViewSet):
+    serializer_class = UserFileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        return UserFile.objects.filter(user=self.request.user)
+
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
