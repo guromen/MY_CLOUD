@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
+from django.dispatch import receiver
+import os
+# from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager): 
@@ -40,7 +43,6 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
 
 #модель файла
-# from django.conf import settings
 def user_directory_path(instance, filename):
     username = instance.user.username or instance.user.email.split('@')[0] #имя файла-если нет username
     return f'user_files/{username}/{filename}'
@@ -63,3 +65,9 @@ class UserFile(models.Model):
 
     def __str__(self):
         return self.name or "Unnamed file"
+    
+    #удаляем файл с диска если объект UserFile был удалён.
+@receiver(models.signals.post_delete, sender=UserFile)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    if instance.file and os.path.isfile(instance.file.path):
+        os.remove(instance.file.path)
