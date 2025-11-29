@@ -117,13 +117,13 @@ class FileView(generics.GenericAPIView):
         file = open(file_obj.file.path, 'rb')
         return FileResponse(file)
         
-class UserViewset(viewsets.ViewSet):
+class UserViewset(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = User.objects.all()
     def get_serializer_class(self):
         if self.action in ["list", "retrieve", "me"]:
-            return UserListSerializer 
-        return RegisterSerializer      
+            return UserListSerializer  #сериализатор для GET
+        return RegisterSerializer      #сериализатор для create/update
 
     #Только админ видит всех пользователей
     def get_queryset(self):

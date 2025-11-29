@@ -16,6 +16,7 @@ class LoginSerializer(serializers.Serializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     is_admin = serializers.BooleanField(required=False)
+
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'fullname', 'password', 'is_admin', 'is_staff', 'is_superuser']
@@ -35,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-            
+
         if is_admin_val is not None:
             instance.is_admin = is_admin_val
             instance.is_staff = is_admin_val
@@ -52,7 +53,8 @@ class UserFileSerializer(serializers.ModelSerializer):
         model = UserFile
         fields = '__all__'
         read_only_fields = ['user', 'size', 'uploaded_at', 'last_downloaded']
-
+        
+# список юзеров в админке
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

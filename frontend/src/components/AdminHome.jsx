@@ -1,21 +1,35 @@
 import { useEffect, useState } from "react";
 import AxiosInstance from "./AxiosInstance";
-// import { useNavigate } from "react-router-dom";
-
-// import "./Home.css";
 
 const AdminHome = ({currentUser, onSelectUser}) => {
-  // const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   
-  
-
   useEffect(() => {
     AxiosInstance.get("users/")
       .then((res) => setUsers(res.data))
       .catch(console.error);
   }, []);
 
+    const handleDeleteUser = (id) => {
+      if (window.confirm("Удалить пользователя?")) {
+        AxiosInstance.delete(`users/${id}/`)
+          .then(() => setUsers(users.filter((u) => u.id !== id)))
+          .catch(console.error);
+        }
+    };
+
+    const filteredUsers = currentUser
+    ? users.filter((u) => u.id !== currentUser.id)
+    : users;
+
+    const toggleAdmin = (user) => {
+      AxiosInstance.patch(`users/${user.id}/`, { is_admin: !user.is_admin })
+        .then((res) =>{
+          console.log("Ответ от сервера:", res.data)
+          setUsers(users.map((u) => (u.id === user.id ? res.data : u)))
+        })
+        .catch(console.error);
+    };   
 
   if (!currentUser) return <p>Загрузка...</p>;
   return (
@@ -35,20 +49,20 @@ const AdminHome = ({currentUser, onSelectUser}) => {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
+          {filteredUsers.map((u) => (
             <tr key={u.id}>
               <td>{u.id}</td>
-              <td>{u.username}</td>
+              <td>{u.username ? u.username : u.email.split('@')[0]}</td>
               <td>{u.email}</td>
-              <td>{u.is_admin ? "V " : "X"}</td>
+              <td>{u.is_admin ? "🟢 " : "🔴"}</td>
               <td>
-                <button >
-                  {u.is_admin ? "Снять админа" : "Назначить админом"}
+                <button onClick={() => toggleAdmin(u)}>
+                  {u.is_admin ? ">>>> Снять админа<<<<" : ">>Назначить админом<<"}
                 </button>{" "}|{" "}
 
-                <button >🗑 Удалить</button>{" "}|{" "}
+                <button onClick={() => handleDeleteUser(u.id)}>🗑 Удалить</button>{" "}|{" "}
                
-                <button onClick={() => {console.log('Файлы пользователя',u.username); onSelectUser(u.id)}}>
+                <button onClick={() => {console.log('Файлы пользователя',u.username); onSelectUser(u)}}>
                   📁 Файлы
                 </button>
 

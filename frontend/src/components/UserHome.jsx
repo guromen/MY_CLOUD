@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AxiosInstance from "./AxiosInstance";
 import "./UserHome.css";
 
-const UserHome = ({currentUser, selectedUserId}) => {
+const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
   const [files, setFiles] = useState([]);
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState("");
@@ -11,14 +11,14 @@ const UserHome = ({currentUser, selectedUserId}) => {
   
 
   useEffect(() => {
-  const url = selectedUserId
-    ? `files/?user_id=${selectedUserId}`
-    : "files/";
-  console.log(selectedUserId)
-  AxiosInstance.get(url)
-    .then((res) => setFiles(res.data))
-    .catch(console.error);
-}, [selectedUserId]);
+    const url = selectedUserId
+      ? `files/?user_id=${selectedUserId}`
+      : "files/";
+    console.log('currentUser',currentUser)
+    AxiosInstance.get(url)
+      .then((res) => setFiles(res.data))
+      .catch(console.error);
+  }, [selectedUserId]);
 
 
   const handleUpload = (e) => {
@@ -76,13 +76,16 @@ const UserHome = ({currentUser, selectedUserId}) => {
     })
     .catch(console.error);
 };
-
+    const userName = currentUser.fullname 
+    ? currentUser.fullname
+    : currentUser.email.split('@')[0]
 
 
   return (
     <div className="home">
       {/* <h2 className="home-title">Ваши файлы, {currentUser.fullname}</h2> */}
-        {currentUser.fullname ? <h2 >Файлы пользователя {currentUser.fullname}!</h2>: <h2 >Файлып пользователя {selectedUserId}!</h2>}
+        {/* {currentUser.fullname ? <h2 >Файлы пользователя {currentUser.fullname}!</h2>: <h2 >Файлы пользователя {selectedUserId}!</h2>} */}
+        <h2>Файлы пользователя {selectedUserName ? selectedUserName: userName} </h2>
 
       <form onSubmit={handleUpload} className="upload-form">
         <input

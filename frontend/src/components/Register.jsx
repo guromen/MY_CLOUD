@@ -32,7 +32,9 @@ const Register = () => {
     const submission = (data) => {
         AxiosInstance.post(`register/`, {
             email: data.email,
-            password: data.password
+            password: data.password,
+            fullname: data.fullname,
+            username: data.username
         })
         .then(() => {
             navigate(`/`) //перенаправляет на страницу login page
