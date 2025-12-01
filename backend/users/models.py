@@ -20,6 +20,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self,email, password=None, **extra_fields): 
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_admin', True) 
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractUser):
@@ -37,9 +38,6 @@ class CustomUser(AbstractUser):
         if self.is_admin:
             self.is_staff = True
             self.is_superuser = True
-        else:
-            self.is_staff = False
-            self.is_superuser = False
         super().save(*args, **kwargs)
 
 #модель файла

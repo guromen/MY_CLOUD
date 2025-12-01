@@ -7,3 +7,6 @@ media/
 .env.development.local
 .env.test.local
 .env.production.local
+.migrations/ 
+*/migrations/*.py
+*/migrations/*.pyc
