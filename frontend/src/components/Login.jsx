@@ -23,7 +23,7 @@ const Login = () => {
         .then((response) => {
                 console.log(response)
             localStorage.setItem('Token', response.data.token)
-            navigate(`/home`)
+            navigate(`/about`)
         })
         .catch((error)=>{
             setShowMessage(true)

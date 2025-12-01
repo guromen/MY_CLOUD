@@ -34,7 +34,6 @@ const AdminHome = ({currentUser, onSelectUser}) => {
   if (!currentUser) return <p>Загрузка...</p>;
   return (
     <div className="home">
-      {/* <h2>Привет, админ {currentUser.fullname}!</h2> */}
       {currentUser.fullname ? <h2>Привет, {currentUser.fullname}!</h2>: <h2>Привет, админ!</h2>}
       <h2 className="home-title">Список пользователей</h2>
 

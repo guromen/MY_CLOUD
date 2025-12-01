@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AxiosInstance from "./AxiosInstance";
 import AdminHome from "./AdminHome";
 import UserHome from "./UserHome";
+import '../App.css'
 
 const Home = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -33,7 +34,7 @@ const Home = () => {
     <div>
       <div>
  
-          <button
+          <button className="showAdmin"
             onClick={() => {
               console.log(currentUser['email'], '; Admin?=',!showAdmin)
               if (showAdmin) {
@@ -71,11 +72,6 @@ const Home = () => {
           currentUser={currentUser}
           selectedUserId={selectedUserId}
           selectedUserName={selectedUserName}
-          // onBackToAdmin={() => {
-
-          //     setShowAdmin(true);
-          //     setSelectedUserId(null);
-          // }}
         />
       )}
     </div>

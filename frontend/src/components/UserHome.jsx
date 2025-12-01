@@ -83,8 +83,6 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
 
   return (
     <div className="home">
-      {/* <h2 className="home-title">Ваши файлы, {currentUser.fullname}</h2> */}
-        {/* {currentUser.fullname ? <h2 >Файлы пользователя {currentUser.fullname}!</h2>: <h2 >Файлы пользователя {selectedUserId}!</h2>} */}
         <h2>Файлы пользователя {selectedUserName ? selectedUserName: userName} </h2>
 
       <form onSubmit={handleUpload} className="upload-form">

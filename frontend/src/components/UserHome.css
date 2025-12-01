@@ -3,12 +3,6 @@
   font-family: 'Tahoma',sans-serif;
 }
 
-/* .home-title {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 20px;
-} */
-
 .upload-form {
   display: flex;
   gap: 10px;
@@ -62,4 +56,17 @@ button {
   border: none;
   cursor: pointer;
   font-size: 16px;
+}
+
+.showAdmin {
+    position: absolute; 
+    right: 50px;
+    background-color: #d67585;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    
 }
