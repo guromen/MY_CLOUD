@@ -3,8 +3,11 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.dispatch import receiver
 import os
-# from django.conf import settings
+import uuid
+from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
 
 class CustomUserManager(BaseUserManager): 
     def create_user(self, email, password=None, **extra_fields ): 
@@ -53,12 +56,21 @@ class UserFile(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     last_downloaded = models.DateTimeField(blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
+    public_uid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    public_link = models.CharField(max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        new_object = self.pk is None
         if self.file and not self.size:
+            logger.error(f"Update file with id='{self.public_uid}'  was initialized by {self.user}.")
             self.size = self.file.size
         if not self.name:
+            logger.info(f"Update file with id='{self.public_uid}'  was initialized by {self.user}.")
             self.name = self.file.name
+        if new_object:
+            logger.info(f"Update file with id='{self.public_uid}'  was initialized by {self.user}.")
+            base_url = os.getenv("REACT_APP_API_URL", "").rstrip("/")
+            self.public_link = f"{base_url}/share/{self.public_uid}"
         super().save(*args, **kwargs)
 
     def __str__(self):

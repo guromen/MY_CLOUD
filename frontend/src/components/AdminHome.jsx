@@ -45,6 +45,8 @@ const AdminHome = ({currentUser, onSelectUser}) => {
             <th>Email</th>
             <th>Администратор</th>
             <th>Действия</th>
+            <th>Всего файлов</th>
+            <th>Размер файлов</th>
           </tr>
         </thead>
         <tbody>
@@ -64,10 +66,9 @@ const AdminHome = ({currentUser, onSelectUser}) => {
                 <button onClick={() => {console.log('Файлы пользователя',u.username); onSelectUser(u)}}>
                   📁 Файлы
                 </button>
-
-
-
               </td>
+              <td>{u.total_files}</td>
+              <td>{u.total_size}</td>
             </tr>
           ))}
         </tbody>

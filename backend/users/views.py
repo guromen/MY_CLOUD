@@ -13,8 +13,10 @@ from rest_framework.decorators import action
 from django.http import FileResponse
 import mimetypes
 from rest_framework import generics
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class LoginViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
@@ -111,9 +113,8 @@ def file_preview(request, pk):
 #общий просмотр файла и ссылка на файл
 class FileView(generics.GenericAPIView):
     queryset = UserFile.objects.all()
-
-    def get(self, request, pk, *args, **kwargs):
-        file_obj = self.get_object()
+    def get(self, request, uid, *args, **kwargs):
+        file_obj = self.queryset.get(public_uid=uid)
         file = open(file_obj.file.path, 'rb')
         return FileResponse(file)
         

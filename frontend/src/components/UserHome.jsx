@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
 import AxiosInstance from "./AxiosInstance";
 import "./UserHome.css";
+import Message from "./forms/Message";
 
 const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
   const [files, setFiles] = useState([]);
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState("");
+  
+  const mimeTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/zip",
+    "application/x-zip-compressed",
+  ];
 
   const API = "files/";
   
@@ -38,7 +48,9 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
       headers: { "Content-Type": "multipart/form-data" },
     })
       .then((res) => setFiles([...files, res.data]))
-      .catch(console.error);
+      .catch((error) => {
+          alert(error.response?.data?.file?.[0] || "Ошибка загрузки файла");
+      });
   };
 
   const handleDelete = (id) => {
@@ -53,6 +65,14 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
     AxiosInstance.patch(`${API}${id}/`, { name: newName })
       .then((res) =>
         setFiles(files.map((f) => (f.id === id ? { ...f, name: res.data.name } : f)))
+      )
+      .catch(console.error);
+  };
+
+    const handleReComment = (id, newComment) => {
+    AxiosInstance.patch(`${API}${id}/`, { comment: newComment })
+      .then((res) =>
+        setFiles(files.map((f) => (f.id === id ? { ...f, comment: res.data.comment } : f)))
       )
       .catch(console.error);
   };
@@ -88,7 +108,20 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
       <form onSubmit={handleUpload} className="upload-form">
         <input
           type="file"
-          onChange={(e) => setFile(e.target.files[0])}
+          // onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e) => {
+            const selected = e.target.files[0];
+            if (!selected) return;
+
+            if (!mimeTypes.includes(selected.type)) {
+              alert("Недопустимый тип файла!");
+              // <Message text={'Недопустимый тип файла!'} />
+              e.target.value = "";
+              return;
+            }
+
+            setFile(selected);
+          }}
           required
           className="file-input"
         />
@@ -140,20 +173,29 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
                   👁️ 
                 </a>{" "}|{" "}
 
-                {/* формирование специальной ссылки на файл для использования внешними пользователями; */}
                 <button 
                   title="Копировать ссылку" 
-                  onClick={() => copyLink(`http://localhost:8000/api/share/${f.id}/`)}>
+                  onClick={() => copyLink(`http://localhost:8000/api/share/${f.public_uid}/`)}
+                  >
                   🔗
                 </button>{" "}|{" "}
 
                 <button
-                  title="Редактировать"
+                  title="Переименовать"
                   onClick={() => {
                     const newName = prompt("Новое имя:", f.name);
                     if (newName) handleRename(f.id, newName);
                   }}>
                   ✏️ 
+                </button>{" "}|{" "}
+
+                <button
+                  title="Редактировать комментарий"
+                  onClick={() => {
+                    const newComment = prompt("Новый комментарий:", f.comment);
+                    if (newComment) handleReComment(f.id, newComment);
+                  }}>
+                  📝
                 </button>{" "}|{" "}
 
                 <button 
