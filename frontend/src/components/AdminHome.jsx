@@ -26,7 +26,9 @@ const AdminHome = ({currentUser, onSelectUser}) => {
       AxiosInstance.patch(`users/${user.id}/`, { is_admin: !user.is_admin })
         .then((res) =>{
           console.log("Ответ от сервера:", res.data)
-          setUsers(users.map((u) => (u.id === user.id ? res.data : u)))
+          setUsers(users.map((u) => 
+            u.id === user.id ? { ...u, is_admin: !u.is_admin } : u
+          ));
         })
         .catch(console.error);
     };   

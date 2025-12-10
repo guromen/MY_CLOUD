@@ -14,9 +14,14 @@ from django.http import FileResponse
 import mimetypes
 from rest_framework import generics
 import logging
+from rest_framework.throttling import UserRateThrottle
+
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+class FileUploadThrottle(UserRateThrottle):
+    rate = "300/minute"
 
 class LoginViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
@@ -30,6 +35,7 @@ class LoginViewset(viewsets.ViewSet):
             user = authenticate(request, email=email, password=password) #ф-ция EmailAuthBackend()
             if user: 
                 _, token = AuthToken.objects.create(user)
+                logger.info(f"[LOGIN] Пользователь {email} успешно вошёл")
                 return Response(
                     {
                         "user": self.serializer_class(user).data,
@@ -37,6 +43,7 @@ class LoginViewset(viewsets.ViewSet):
                     }
                 )
             else: 
+                logger.info(f"[LOGIN FAILED] Попытка входа с {email}")
                 return Response({"error":"Недопустимые данные"}, status=401)    
         else: 
             return Response(serializer.errors,status=400)
@@ -59,6 +66,7 @@ class UserFileViewSet(viewsets.ModelViewSet):
     serializer_class = UserFileSerializer
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    throttle_classes = [FileUploadThrottle]
 
     def get_queryset(self):
         user = self.request.user
@@ -81,9 +89,11 @@ class UserFileViewSet(viewsets.ModelViewSet):
         if user.is_staff or getattr(user, "is_admin", False):
             if target_user_id:
                 target_user = User.objects.get(id=target_user_id)
+                logger.info(f"[UPLOAD] Админ {user.email} загрузил файл для {target_user.email}")
                 return serializer.save(user=target_user)
         # обычный пользователь
         serializer.save(user=user)
+        logger.info(f"[UPLOAD] Пользователь {user.email} загрузил файл")
 
    #скачивание файла
     @action(detail=True, methods=['get']) 
@@ -91,6 +101,7 @@ class UserFileViewSet(viewsets.ModelViewSet):
         file_obj = self.get_object()
         file_obj.last_downloaded = timezone.now()
         file_obj.save()
+        logger.info(f"[DOWNLOAD] Пользователь {request.user.email} скачал файл: {file_obj.name}")
         return FileResponse(file_obj.file.open(), as_attachment=True)
     
 #просмотр файла
@@ -112,14 +123,17 @@ def file_preview(request, pk):
 
 #общий просмотр файла и ссылка на файл
 class FileView(generics.GenericAPIView):
+    throttle_classes = [FileUploadThrottle]
     queryset = UserFile.objects.all()
     def get(self, request, uid, *args, **kwargs):
         file_obj = self.queryset.get(public_uid=uid)
+        logger.info(f"[PUBLIC LINK] Доступ к файлу {file_obj.name} через uid {uid}")
         file = open(file_obj.file.path, 'rb')
         return FileResponse(file)
         
 class UserViewset(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [FileUploadThrottle]
     queryset = User.objects.all()
     def get_serializer_class(self):
         if self.action in ["list", "retrieve", "me"]:
@@ -148,11 +162,14 @@ class UserViewset(viewsets.ModelViewSet):
         serializer = RegisterSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        logger.info(f"[USER UPDATED] Пользователь {user.email} обновлён админом {request.user.email}")
         # print(serializer.data)
         return Response(serializer.data)
 
     #Админ может удалять пользователей
     def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
         if not request.user.is_staff and not getattr(request.user, 'is_admin', False):
             return Response({"detail": "Нет прав для удаления."}, status=status.HTTP_403_FORBIDDEN)
+        logger.info(f"[USER DELETED] Пользователь {user.email} удалён админом")
         return super().destroy(request, *args, **kwargs)

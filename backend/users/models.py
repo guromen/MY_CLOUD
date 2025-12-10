@@ -38,10 +38,15 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = []
 
     def save(self, *args, **kwargs):
+        new_user = self.pk is None
         if self.is_admin:
             self.is_staff = True
             self.is_superuser = True
         super().save(*args, **kwargs)
+        if new_user:
+            logger.info(f"[USER CREATED] Создан новый пользователь: {self.email}")
+        else:
+            logger.info(f"[ADMIN SET] Пользователь {self.email}: изменены права администратора на {self.is_admin}")
 
 #модель файла
 def user_directory_path(instance, filename):
@@ -62,15 +67,16 @@ class UserFile(models.Model):
     def save(self, *args, **kwargs):
         new_object = self.pk is None
         if self.file and not self.size:
-            logger.error(f"Update file with id='{self.public_uid}'  was initialized by {self.user}.")
             self.size = self.file.size
+            logger.info(f"[SIZE] Файл {self.file.name} — size={self.size} bytes")
         if not self.name:
-            logger.info(f"Update file with id='{self.public_uid}'  was initialized by {self.user}.")
             self.name = self.file.name
+            logger.info(f"[NAME] Имя файла установлено {self.name}")
         if new_object:
-            logger.info(f"Update file with id='{self.public_uid}'  was initialized by {self.user}.")
             base_url = os.getenv("REACT_APP_API_URL", "").rstrip("/")
             self.public_link = f"{base_url}/share/{self.public_uid}"
+            logger.info(f"[UPLOAD] Новый файл от {self.user.email}: {self.file.name}")
+            logger.info(f"[LINK] Публичная ссылка создана: {self.public_link}")
         super().save(*args, **kwargs)
 
     def __str__(self):

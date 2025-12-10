@@ -3,11 +3,9 @@ from .models import *
 from django.contrib.auth import get_user_model
 import re
 import math
-import logging
 from django.core.exceptions import ValidationError
 User = get_user_model()
 
-logger = logging.getLogger(__name__)
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
