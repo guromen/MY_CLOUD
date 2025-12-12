@@ -6,7 +6,9 @@ const AdminHome = ({currentUser, onSelectUser}) => {
   
   useEffect(() => {
     AxiosInstance.get("users/")
-      .then((res) => setUsers(res.data))
+      .then((res) => {
+        console.log("Список юзеров:", res.data);
+        setUsers(res.data)})
       .catch(console.error);
   }, []);
 

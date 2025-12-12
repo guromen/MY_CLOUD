@@ -16,6 +16,8 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { Link, useLocation } from 'react-router-dom'
 import AxiosInstance from './AxiosInstance';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { UserContext } from './UserContext';
 
 const drawerWidth = 240;
 
@@ -24,15 +26,12 @@ export default function Navbar(props) {
     const location = useLocation()
     const path = location.pathname
     const navigate = useNavigate()
+    const { logout } = useContext(UserContext);
 
-    const userLogout = ()=> {
-      AxiosInstance.post(`logoutall/`, {})
-      .then(()=>{
-        localStorage.removeItem('Token')
-        console.log('токен удален')
-        navigate('/')
-      })      
-    }
+    const userLogout = () => {
+      logout();
+      navigate("/");
+    };
 
   return (
     <Box sx={{ display: 'flex' }}>

@@ -9,26 +9,35 @@ import { useForm } from 'react-hook-form'
 import AxiosInstance from './AxiosInstance'
 import { useNavigate } from 'react-router-dom'
 import Message from './forms/Message'
+import { useContext } from 'react'
+import { UserContext } from './UserContext'
+
 
 const Login = () => {
     const {handleSubmit, control} = useForm()
     const navigate = useNavigate()
     const [showMessage, setShowMessage] = useState(false)
+    const { setCurrentUser } = useContext(UserContext)
 
-    const submission = (data) => {
-        AxiosInstance.post(`login/`, {
+    const submission = async (data) => {
+    try {
+        // Получаем CSRF
+        await AxiosInstance.get("/csrf/")
+
+        //  Логинимся
+        await AxiosInstance.post("/login/", {
             email: data.email,
-            password: data.password,
+            password: data.password
         })
-        .then((response) => {
-                console.log(response)
-            localStorage.setItem('Token', response.data.token)
-            navigate(`/about`)
-        })
-        .catch((error)=>{
+        const res = await AxiosInstance.get("/users/me/")
+        console.log("Текущий пользователь:", res.data)
+        setCurrentUser(res.data) 
+        console.log("Вход успешен, токен хранится в httpOnly cookie")
+        navigate("/about")
+        } catch (error) {
             setShowMessage(true)
-            console.error('Ошибка при логине', error)
-        })
+            console.error("Ошибка при логине", error)
+        }
     }
 
     return (

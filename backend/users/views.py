@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, status
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
@@ -15,13 +15,17 @@ import mimetypes
 from rest_framework import generics
 import logging
 from rest_framework.throttling import UserRateThrottle
+from knox.views import LogoutAllView as KnoxLogoutView
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
 class FileUploadThrottle(UserRateThrottle):
-    rate = "300/minute"
+    rate = "1000/minute"
 
 class LoginViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
@@ -33,20 +37,35 @@ class LoginViewset(viewsets.ViewSet):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             user = authenticate(request, email=email, password=password) #ф-ция EmailAuthBackend()
-            if user: 
+            if user:
                 _, token = AuthToken.objects.create(user)
                 logger.info(f"[LOGIN] Пользователь {email} успешно вошёл")
-                return Response(
-                    {
-                        "user": self.serializer_class(user).data,
-                        "token": token
-                    }
+                response = Response({
+                    "user": self.serializer_class(user).data
+                }, status=status.HTTP_200_OK)
+
+                response.set_cookie(
+                    key='auth_token',
+                    value=token,
+                    httponly=True,
+                    secure=False,      # True на https/проде
+                    samesite='Lax',    
+                    max_age=60 * 60 * 24 * 7  # 7 дней
                 )
+
+                return response
             else: 
                 logger.info(f"[LOGIN FAILED] Попытка входа с {email}")
                 return Response({"error":"Недопустимые данные"}, status=401)    
         else: 
             return Response(serializer.errors,status=400)
+
+class LogoutView(KnoxLogoutView):
+    def post(self, request, format=None):
+        response = super().post(request, format=None)
+        # удаляем cookie
+        response.delete_cookie('auth_token')
+        return response
 
 class RegisterViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
@@ -138,6 +157,8 @@ class UserViewset(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ["list", "retrieve", "me"]:
             return UserListSerializer  #сериализатор для GET
+        if self.action in ["update", "partial_update"]:
+            return  UserUpdateSerializer
         return RegisterSerializer      #сериализатор для create/update
 
     #Только админ видит всех пользователей
@@ -159,12 +180,12 @@ class UserViewset(viewsets.ModelViewSet):
         if not request.user.is_staff and not getattr(request.user, 'is_admin', False):
             return Response({"message": "Нет прав для изменения."}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = RegisterSerializer(user, data=request.data, partial=True)
+        serializer = self.get_serializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         logger.info(f"[USER UPDATED] Пользователь {user.email} обновлён админом {request.user.email}")
-        # print(serializer.data)
-        return Response(serializer.data)
+        print(serializer.data)
+        return Response(serializer.data, status=200)
 
     #Админ может удалять пользователей
     def destroy(self, request, *args, **kwargs):
@@ -173,3 +194,7 @@ class UserViewset(viewsets.ModelViewSet):
             return Response({"detail": "Нет прав для удаления."}, status=status.HTTP_403_FORBIDDEN)
         logger.info(f"[USER DELETED] Пользователь {user.email} удалён админом")
         return super().destroy(request, *args, **kwargs)
+    
+@ensure_csrf_cookie
+def get_csrf(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})

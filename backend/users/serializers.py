@@ -139,3 +139,8 @@ class UserListSerializer(serializers.ModelSerializer):
         result=(UserFile.objects.filter(user=obj).aggregate(
             total=models.Sum("size"))["total"] or 0)
         return convert_size(result)
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "email", "username", "fullname", "is_admin"]

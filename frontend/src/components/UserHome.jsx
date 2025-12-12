@@ -115,7 +115,6 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
 
             if (!mimeTypes.includes(selected.type)) {
               alert("Недопустимый тип файла!");
-              // <Message text={'Недопустимый тип файла!'} />
               e.target.value = "";
               return;
             }

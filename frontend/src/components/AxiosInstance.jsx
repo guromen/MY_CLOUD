@@ -1,35 +1,34 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 
-const baseUrl = 'http://127.0.0.1:8000/'
+const baseUrl = 'http://localhost:8000/';
 
 const AxiosInstance = axios.create({
     baseURL: baseUrl,
-    headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json'
-    }
+    withCredentials: true,
+  
+    
 })
 
 AxiosInstance.interceptors.request.use(
+ 
     (config) => {
-        const token = localStorage.getItem(`Token`)
-        if(token) {
-            config.headers.Authorization = `Token ${token}`
-        }
-        else {
-            config.headers.Authorization = ``
-        }
+        const csrf = Cookies.get('csrftoken')
+        if (csrf) config.headers['X-CSRFToken'] = csrf
+        console.log("➡️ Sending request:", config.url);
         return config
     }
 )
 AxiosInstance.interceptors.response.use(
     (response) => {
-        return response
+        console.log("Status:", response.status);
+        console.log("Headers:", response.headers);
+        console.log("Data:", response.data);
+        return response;
     },
     (error) => {
-        if (error.response && error.response.status===401) {
-            localStorage.removeItem('Token')
-        }
+        console.log("API error:", error.response?.status, error.response?.data);
+        return Promise.reject(error)
     }
 )
 export default AxiosInstance

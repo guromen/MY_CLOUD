@@ -1,70 +1,50 @@
-import { useEffect, useState } from "react";
-import AxiosInstance from "./AxiosInstance";
+import { useState, useContext } from "react";
 import AdminHome from "./AdminHome";
 import UserHome from "./UserHome";
-import '../App.css'
+import '../App.css';
+import { UserContext } from './UserContext';
 
 const Home = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser, loading } = useContext(UserContext);
   const [showAdmin, setShowAdmin] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUserName, setSelectedUserName] = useState(null);
 
-  useEffect(() => {
-    AxiosInstance.get("users/me/")
-      .then((res) => {
-        setCurrentUser(res.data)
-        setSelectedUserId(res.data.id); //сразу ставим свои файлы!
-        console.log(currentUser)
+  if (loading) return <p>Загрузка...</p>;
 
-      })
-      .catch(console.error);
-      
-  }, []);
+  if (!currentUser) return <p>Пожалуйста, войдите в систему</p>;
 
-  if (!currentUser) return <p>Загрузка...</p>;
-
-  // Если пользователь не админ — просто показываем UserHome
+  // если пользователь не админ — сразу UserHome
   if (!currentUser.is_admin) {
     return <UserHome currentUser={currentUser} />;
   }
 
-  // Если пользователь админ — даем возможность переключать экран
+  // пользователь админ
   return (
     <div>
       <div>
- 
-          <button className="showAdmin"
-            onClick={() => {
-              console.log(currentUser['email'], '; Admin?=',!showAdmin)
-              if (showAdmin) {
-                // выходим ИЗ админки - показываем свои файлы
-                setSelectedUserId(currentUser.id);
-                
-              } else {
-                // заходим в админку - сбрасываем выбор юзера
-                setSelectedUserId(null);
-                setSelectedUserName(null)
-              }
-
-                setShowAdmin(!showAdmin);
-              }}
-          >
-            {showAdmin ? "⬅ К моим файлам" : "⚙️ Админка"}
-          </button>
-
+        <button className="showAdmin"
+          onClick={() => {
+            if (showAdmin) {
+              setSelectedUserId(currentUser.id); // показываем свои файлы
+            } else {
+              setSelectedUserId(null);
+              setSelectedUserName(null);
+            }
+            setShowAdmin(!showAdmin);
+          }}
+        >
+          {showAdmin ? "⬅ К моим файлам" : "⚙️ Админка"}
+        </button>
       </div>
-
 
       {showAdmin ? (
         <AdminHome
           currentUser={currentUser}
-          onSelectUser={(userId) => {
-            setSelectedUserId(userId.id);
-            setSelectedUserName(userId.fullname?
-              userId.fullname
-              :userId.email.split('@')[0]);
-            setShowAdmin(false); // Нажимаем на файлы и  переходим в UserHome
+          onSelectUser={(user) => {
+            setSelectedUserId(user.id);
+            setSelectedUserName(user.fullname ? user.fullname : user.email.split('@')[0]);
+            setShowAdmin(false); // переходим к UserHome
           }}
         />
       ) : (

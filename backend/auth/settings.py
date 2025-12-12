@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,7 +32,40 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "cookie",
+]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
 
+]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+
+]
+CORS_ALLOW_CREDENTIALS = True   
+
+# CSRF
+CSRF_COOKIE_SECURE = False     # True на проде (https)
+CSRF_COOKIE_HTTPONLY = False   # 
+SESSION_COOKIE_SECURE = False  # True на проде
+
+AUTH_COOKIE = {
+    "name": "auth_token",
+    "secure": False,
+    "httponly": True,
+    "samesite": "Lax",
+}
 
 # Application definition
 
@@ -52,6 +86,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'users.middleware.CookieToHeaderAuthMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -59,14 +94,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-]
 AUTH_USER_MODEL = 'users.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
-    'users.auth_backend.EmailAuthBackend',
-    'django.contrib.auth.backends.ModelBackend'
+    # 'users.auth_backend.EmailAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'auth.urls'
@@ -110,7 +142,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
-    
+
     #базовый rate-limiting
      "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.UserRateThrottle",
@@ -121,7 +153,10 @@ REST_FRAMEWORK = {
         "anon": "10/minute",
     }
 }
-
+REST_KNOX = {
+    'TOKEN_COOKIE': True,
+    'TOKEN_TTL': None,
+}
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",

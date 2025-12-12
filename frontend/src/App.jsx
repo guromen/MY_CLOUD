@@ -7,6 +7,7 @@ import About from './components/About'
 import { Routes, Route, useLocation} from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminHome from './components/AdminHome'
+import { UserProvider } from './components/UserContext'
 
 function App() {
   const location = useLocation()
@@ -14,27 +15,27 @@ function App() {
   console.log(location)
   return (
     <>
-      {
-        noNavbar ?
+      <UserProvider>
+        {noNavbar ? (
           <Routes>
-            <Route path='/' element={<Login/>}/>
-            <Route path='/register' element={<Register/>}/>
+            <Route path='/' element={<Login />} />
+            <Route path='/register' element={<Register />} />
           </Routes>
-        :
-          <Navbar 
-            content={
-              <Routes>
-                <Route element={<ProtectedRoute/>}>      
-                  <Route path='/home' element={<Home/>}/>
-                  <Route path='/about' element={<About/>}/> 
-                  <Route path='/user-files/:id' element={<AdminHome/>}/>
-                </Route>
-              </Routes> 
-              //при переходе на home/about -> ProtectedRoute смотрит есть ли Токен, если есть- отрисовываются дочерние элементы Outlet'a: <Home>&<About>    
-            }
-          />
-      }
-      
+          ) : (
+            <Navbar
+              content={
+                <Routes>
+                  <Route element={<ProtectedRoute />}>
+                    <Route path='/home' element={<Home />} />
+                    <Route path='/about' element={<About />} />
+                    <Route path='/user-files/:id' element={<AdminHome />} />
+                  </Route>
+                </Routes>
+              }
+            />
+          )
+        }
+    </UserProvider>
     </>
   )
 }
