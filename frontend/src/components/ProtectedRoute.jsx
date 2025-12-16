@@ -1,13 +1,18 @@
-import { Outlet, Navigate } from "react-router-dom";
-import { useContext } from "react";
-import { UserContext } from "./UserContext";
+import { useSelector } from "react-redux";
+import { Navigate, Outlet } from "react-router-dom";
 
 const ProtectedRoute = () => {
-  const { currentUser, loading } = useContext(UserContext);
+  const { currentUser, authChecked } = useSelector((state) => state.user);
 
-  if (loading) return <p>Загрузка...</p>;
+  if (!authChecked) {
+    return <p>Проверка авторизации...</p>;
+  }
 
-  return currentUser ? <Outlet /> : <Navigate to="/" />;
+  if (!currentUser) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

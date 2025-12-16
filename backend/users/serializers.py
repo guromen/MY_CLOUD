@@ -101,6 +101,7 @@ class UserFileSerializer(serializers.ModelSerializer):
             "image/webp",
             "application/zip",
             "application/x-zip-compressed",
+            "text/html", 
         ]
 
         if file.content_type not in allowed:

@@ -14,15 +14,14 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import InfoIcon from '@mui/icons-material/Info';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { Link, useLocation } from 'react-router-dom'
-import AxiosInstance from './AxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { UserContext } from './UserContext';
+import {  Outlet } from "react-router-dom";
 
 const drawerWidth = 240;
 
-export default function Navbar(props) {
-    const {content}=props
+export default function Navbar() {
     const location = useLocation()
     const path = location.pathname
     const navigate = useNavigate()
@@ -88,7 +87,7 @@ export default function Navbar(props) {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-         {content}
+          <Outlet /> 
       </Box>
     </Box>
   );

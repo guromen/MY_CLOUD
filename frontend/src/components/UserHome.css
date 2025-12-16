@@ -70,3 +70,27 @@ button {
     transition: 0.2s;
     
 }
+
+.file-row {
+  height: 70px;
+}
+
+.file-preview-cell {
+  width: 90px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.file-preview {
+  max-height: 60px;
+  max-width: 80px;
+  object-fit: contain;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.file-icon {
+  font-size: 32px;
+  cursor: pointer;
+}

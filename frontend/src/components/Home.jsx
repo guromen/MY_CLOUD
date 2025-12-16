@@ -1,22 +1,30 @@
-import { useState, useContext } from "react";
+import { useEffect, useState} from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchCurrentUser } from "../slices/userSlice";
 import AdminHome from "./AdminHome";
 import UserHome from "./UserHome";
-import '../App.css';
-import { UserContext } from './UserContext';
+import { fetchUsers } from "../slices/userSlice";
+import { selectCurrentUser } from "../slices/userSlice";
 
 const Home = () => {
-  const { currentUser, loading } = useContext(UserContext);
+  const dispatch = useDispatch();
+  const loading = useSelector((state) => state.user.loading);
+  const currentUser = useSelector(selectCurrentUser);
   const [showAdmin, setShowAdmin] = useState(true);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [selectedUserName, setSelectedUserName] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const users = useSelector((state) => state.user.users);
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   if (loading) return <p>Загрузка...</p>;
-
   if (!currentUser) return <p>Пожалуйста, войдите в систему</p>;
 
   // если пользователь не админ — сразу UserHome
   if (!currentUser.is_admin) {
-    return <UserHome currentUser={currentUser} />;
+    return <UserHome selectedUser={{ id: currentUser.id, name: currentUser.fullname || currentUser.email.split('@')[0] }} />;
   }
 
   // пользователь админ
@@ -26,12 +34,11 @@ const Home = () => {
         <button className="showAdmin"
           onClick={() => {
             if (showAdmin) {
-              setSelectedUserId(currentUser.id); // показываем свои файлы
+              setSelectedUser({ id: currentUser.id, name: currentUser.fullname || currentUser.email.split('@')[0] }); // показываем свои файлы
             } else {
-              setSelectedUserId(null);
-              setSelectedUserName(null);
+              setSelectedUser(null);
             }
-            setShowAdmin(!showAdmin);
+              setShowAdmin(!showAdmin);
           }}
         >
           {showAdmin ? "⬅ К моим файлам" : "⚙️ Админка"}
@@ -41,17 +48,17 @@ const Home = () => {
       {showAdmin ? (
         <AdminHome
           currentUser={currentUser}
+          users={users}
           onSelectUser={(user) => {
-            setSelectedUserId(user.id);
-            setSelectedUserName(user.fullname ? user.fullname : user.email.split('@')[0]);
-            setShowAdmin(false); // переходим к UserHome
+            setSelectedUser({ id: user.id, name: user.fullname || user.email.split("@")[0] });
+            setShowAdmin(false);
           }}
+
         />
       ) : (
         <UserHome
-          currentUser={currentUser}
-          selectedUserId={selectedUserId}
-          selectedUserName={selectedUserName}
+          selectedUser={selectedUser}
+
         />
       )}
     </div>

@@ -185,7 +185,8 @@ class UserViewset(viewsets.ModelViewSet):
         serializer.save()
         logger.info(f"[USER UPDATED] Пользователь {user.email} обновлён админом {request.user.email}")
         print(serializer.data)
-        return Response(serializer.data, status=200)
+        full = UserListSerializer(user)
+        return Response(full.data, status=200)
 
     #Админ может удалять пользователей
     def destroy(self, request, *args, **kwargs):

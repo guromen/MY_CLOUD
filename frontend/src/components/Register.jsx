@@ -9,6 +9,8 @@ import AxiosInstance from './AxiosInstance'
 import { useNavigate } from 'react-router-dom'
 import {yupResolver} from '@hookform/resolvers/yup'
 import * as yup from 'yup'
+import { useDispatch } from "react-redux";
+import { fetchCurrentUser } from "../slices/userSlice";
 
 const Register = () => {
     const navigate = useNavigate()
@@ -28,17 +30,20 @@ const Register = () => {
 
     })  
     const {handleSubmit, control} = useForm({resolver:yupResolver(checkRegister)})
+    const dispatch = useDispatch();
 
     const submission = (data) => {
-        AxiosInstance.post(`register/`, {
-            email: data.email,
-            password: data.password,
-            fullname: data.fullname,
-            username: data.username
-        })
-        .then(() => {
-            navigate(`/`) //перенаправляет на страницу login page
-        }) 
+    AxiosInstance.post(`register/`, {
+        email: data.email,
+        password: data.password,
+        fullname: data.fullname,
+        username: data.username
+    })
+    .then(async () => {
+        await dispatch(fetchCurrentUser());
+        navigate("/home");
+    }) 
+    .catch(err => console.error(err));
     }
     return (
        <div className="backgroundLogin">

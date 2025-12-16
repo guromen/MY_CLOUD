@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import AxiosInstance from "./AxiosInstance";
+import { useDispatch, useSelector } from "react-redux";
+import {fetchUserFiles, uploadFile, deleteFile, selectUserFiles, renameFile, updateFileComment} from "../slices/userSlice";
 import "./UserHome.css";
-import Message from "./forms/Message";
 
-const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
-  const [files, setFiles] = useState([]);
+const UserHome = ({selectedUser}) => {
+  const dispatch = useDispatch();
+  const { error } = useSelector(state => state.user);
+  const userId = selectedUser?.id || null;
+  const files = useSelector((state) =>
+    selectUserFiles(state, userId)
+  );
+  const currentUser = useSelector((state) => state.user.currentUser);
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState("");
+  const isImage = (filename) =>/\.(jpg|jpeg|png|webp|gif)$/i.test(filename);
+  const totalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
   
   const mimeTypes = [
     "application/pdf",
@@ -15,66 +24,44 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
     "image/webp",
     "application/zip",
     "application/x-zip-compressed",
+    "text/html", 
   ];
 
   const API = "files/";
   
-
   useEffect(() => {
-    const url = selectedUserId
-      ? `files/?user_id=${selectedUserId}`
-      : "files/";
-    console.log('currentUser',currentUser)
-    AxiosInstance.get(url)
-      .then((res) => setFiles(res.data))
-      .catch(console.error);
-  }, [selectedUserId]);
-
+    if (!currentUser) return;
+    dispatch(fetchUserFiles(userId));
+  }, [currentUser, userId, dispatch]);
+  useEffect(() => {
+    if (error) alert(error);
+  }, [error]);
 
   const handleUpload = (e) => {
     e.preventDefault();
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("comment", comment);
-      // если админ загружает другому пользователю
-    if (selectedUserId) {
-      formData.append("user_id", selectedUserId);
-    }
-    setComment("");      
-    setFile(null);      
-    e.target.reset(); 
 
-    AxiosInstance.post(API, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-      .then((res) => setFiles([...files, res.data]))
-      .catch((error) => {
-          alert(error.response?.data?.file?.[0] || "Ошибка загрузки файла");
-      });
+    dispatch(uploadFile({ userId, formData }));
+
+    setComment("");
+    setFile(null);
+    e.target.reset();
   };
 
   const handleDelete = (id) => {
-    const deleteFile= window.confirm('Вы точно хотите удалить файл?')
-    if (deleteFile){
-    AxiosInstance.delete(`${API}${id}/`)
-      .then(() => setFiles(files.filter((f) => f.id !== id)))
-      .catch(console.error);}
+    if (!window.confirm("Удалить файл?")) return;
+    dispatch(deleteFile({ userId, fileId: id }));
   };
 
-  const handleRename = (id, newName) => {
-    AxiosInstance.patch(`${API}${id}/`, { name: newName })
-      .then((res) =>
-        setFiles(files.map((f) => (f.id === id ? { ...f, name: res.data.name } : f)))
-      )
-      .catch(console.error);
+  const handleRename = (id, name) => {
+    dispatch(renameFile({ fileId: id, newName: name }));
   };
 
-    const handleReComment = (id, newComment) => {
-    AxiosInstance.patch(`${API}${id}/`, { comment: newComment })
-      .then((res) =>
-        setFiles(files.map((f) => (f.id === id ? { ...f, comment: res.data.comment } : f)))
-      )
-      .catch(console.error);
+  const handleReComment = (id, comment) => {
+    dispatch(updateFileComment({ fileId: id, comment }));
   };
 
   const copyLink = (fileUrl) => {
@@ -96,19 +83,17 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
     })
     .catch(console.error);
 };
-    const userName = currentUser.fullname 
-    ? currentUser.fullname
-    : currentUser.email.split('@')[0]
+
+    const userName = selectedUser?.name || currentUser.fullname || currentUser.email.split("@")[0];
 
 
   return (
     <div className="home">
-        <h2>Файлы пользователя {selectedUserName ? selectedUserName: userName} </h2>
+        <h2>Файлы пользователя {userName} </h2>
 
       <form onSubmit={handleUpload} className="upload-form">
         <input
           type="file"
-          // onChange={(e) => setFile(e.target.files[0])}
           onChange={(e) => {
             const selected = e.target.files[0];
             if (!selected) return;
@@ -139,6 +124,7 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
       <table className="files-table">
         <thead>
           <tr>
+            <th>Файл</th>
             <th>Имя</th>
             <th>Комментарий</th>
             <th>Размер</th>
@@ -150,6 +136,18 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
         <tbody>
           {files.map((f) => (
             <tr key={f.id}>
+              <td className="file-preview-cell">
+                {isImage(f.file) ? (
+                  <img
+                    src={f.file}
+                    alt={f.name}
+                    className="file-preview"
+                    onClick={() => handleView(f.id, f.name)}
+                  />
+                ) : (
+                  <div className="file-icon">📄</div>
+                )}
+              </td>
               <td>{f.name}</td>
               <td>{f.comment}</td>
               <td>{(f.size / 1024).toFixed(1)} КБ</td>
@@ -208,7 +206,9 @@ const UserHome = ({currentUser, selectedUserId,selectedUserName}) => {
               </td>
             </tr>
           ))}
+          
         </tbody>
+        <tfoot>Файлов: {files.length}/ {(totalSize / 1024).toFixed(1)} КБ</tfoot>
       </table>
     </div>
   );

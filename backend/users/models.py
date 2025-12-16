@@ -50,12 +50,12 @@ class CustomUser(AbstractUser):
 
 #модель файла
 def user_directory_path(instance, filename):
-    username = instance.user.username or instance.user.email.split('@')[0] #имя файла-если нет username
+    username = instance.user.username or instance.user.email.split('@')[0] 
     return f'user_files/{username}/{filename}'
 
 class UserFile(models.Model):
     user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to=user_directory_path) #имя файла если нет username
+    file = models.FileField(upload_to=user_directory_path) 
     comment = models.CharField(max_length=255, blank=True, null=True)
     size = models.PositiveIntegerField(default=0)
     uploaded_at = models.DateTimeField(auto_now_add=True)
