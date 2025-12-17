@@ -14,6 +14,7 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log("APP useEffect:");
     dispatch(fetchCurrentUser());
   }, [dispatch]);
 

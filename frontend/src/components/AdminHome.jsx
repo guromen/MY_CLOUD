@@ -1,11 +1,19 @@
-import { useSelector, useDispatch } from "react-redux";
-import {  deleteUser, toggleAdmin } from "../slices/userSlice";
+import { useSelector, useDispatch, } from "react-redux";
+import {  deleteUser, toggleAdmin, fetchUsers} from "../slices/userSlice";
+import { useEffect, useState} from "react";
 
-const AdminHome = ({ currentUser, users, onSelectUser }) => {
+const AdminHome = ({  currentUser, onSelectUser }) => {
   const dispatch = useDispatch();
-  const loading = useSelector((state) => state.user.loading);
+  const pagination = useSelector(state => state.user.usersPagination);
+  const [page, setPage] = useState(pagination.page || 1);
+  const users = useSelector((state) => state.user.users);
+  
+  
+  useEffect(() => {
+    dispatch(fetchUsers({ page }));
+  }, [dispatch, page]);
 
-  if (!currentUser || loading === "loading") return <p>Загрузка...</p>;
+  if (!currentUser ) return <p>Загрузка...</p>;
 
   const handleDeleteUser = (id) => {
     if (window.confirm("Удалить пользователя?")) {
@@ -17,9 +25,7 @@ const AdminHome = ({ currentUser, users, onSelectUser }) => {
     dispatch(toggleAdmin(user));
   };
 
-  const filteredUsers = currentUser
-    ? users.filter((u) => u.id !== currentUser.id)
-    : users;
+  const filteredUsers = users.filter((u) => u.id !== currentUser.id);
 
   return (
     <div className="home">
@@ -71,9 +77,14 @@ const AdminHome = ({ currentUser, users, onSelectUser }) => {
           ))}
         </tbody>
       </table>
+
+      <div className="pagination">
+        <button disabled={!pagination.previous} onClick={() => setPage(p => Math.max(1, p - 1))}>← Назад</button>
+        <span>Страница {page}</span>
+        <button disabled={!pagination.next} onClick={() => setPage(p => p + 1)}>Вперёд →</button>
+      </div>
     </div>
   );
 };
 
 export default AdminHome;
-
