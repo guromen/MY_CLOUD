@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AxiosInstance from "../components/AxiosInstance";
-// import {createSelector } from "@reduxjs/toolkit";
 
 // Получаем текущего пользователя
 export const fetchCurrentUser = createAsyncThunk(
@@ -23,7 +22,7 @@ export const fetchUsers = createAsyncThunk(
       const res = await AxiosInstance.get("users/", {
         params: { page },
       });
-      return res.data; // res.data содержит {count, next, previous, results}
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data);
     }
@@ -184,21 +183,8 @@ const userSlice = createSlice({
       .addCase(fetchUsers.pending, (state) => {
         state.loading = true;
       })
-      // .addCase(fetchUsers.fulfilled, (state, action) => {
-        
-      //   state.loading = false;
-      //   state.users = action.payload.results.map(u => ({ ...u, files: u.files ?? [] }));
-
-      //   state.usersPagination = {
-      //     count: action.payload.count,
-      //     next: action.payload.next,
-      //     previous: action.payload.previous,
-      //     page: state.usersPagination.page,
-      //   };
-      // })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-
         // оставляем currentUser без изменения
         const currentUserId = state.currentUser?.id;
 
@@ -221,25 +207,12 @@ const userSlice = createSlice({
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loading = true;
       })
-      // .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-      //   state.loading = false;
-      //   state.authChecked = true;
-
-      //   const user = { ...action.payload, files: action.payload.files ?? [] };
-
-      //   state.currentUser = user;
-      // })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
           state.loading = false;
           state.authChecked = true;
-
           const user = { ...action.payload, files: action.payload.files ?? [] };
-
-          // Добавляем в users, если его там нет
           const exists = state.users.find((u) => u.id === user.id);
           if (!exists) state.users.push(user);
-
-          // Сохраняем объект пользователя, а не только ID
           state.currentUser = user;
       })
       .addCase(fetchCurrentUser.rejected, (state) => {
@@ -334,14 +307,15 @@ const userSlice = createSlice({
 
 export default userSlice.reducer;
 
-// export const selectCurrentUser = createSelector(
-//   (state) => state.user.users,
-//   (state) => state.user.currentUser,
-//   (users, currentUserId) => users.find((u) => u.id === currentUserId)
-// );
-
 export const selectUserFiles = (state, userId) => {
-  if (!userId) return state.user.currentUser?.files || [];
+  const currentUser = state.user.currentUser;
+
+  // 🔹 если это текущий пользователь — берем из currentUser
+  if (!userId || currentUser?.id === userId) {
+    return currentUser?.files || [];
+  }
+
+  // 🔹 иначе ищем в users
   const user = state.user.users.find((u) => u.id === userId);
   return user?.files || [];
 };

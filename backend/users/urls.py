@@ -11,8 +11,6 @@ router.register('files', UserFileViewSet, basename='files')
 
 urlpatterns = [
     path('files/<int:pk>/preview/', file_preview, name='file-preview'),
-    # path("files/<uuid:uid>/preview/", FilePreviewView.as_view(), name="file_preview"),
-    # path('api/share/<int:pk>/', FileView.as_view(), name='open_share_file'),
     path('api/share/<uuid:uid>/', FileView.as_view(), name='open_share_file'),
 
 ]

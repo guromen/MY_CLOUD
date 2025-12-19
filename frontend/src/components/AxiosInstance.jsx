@@ -15,7 +15,6 @@ AxiosInstance.interceptors.request.use(
     (config) => {
         const csrf = Cookies.get('csrftoken')
         if (csrf) config.headers['X-CSRFToken'] = csrf
-        console.log("➡️ Sending request:", config.url);
         return config
     }
 )

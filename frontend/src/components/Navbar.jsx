@@ -15,8 +15,6 @@ import InfoIcon from '@mui/icons-material/Info';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { Link, useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom';
-// import { useContext } from 'react';
-// import { UserContext } from './UserContext';
 import {  Outlet } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../slices/userSlice";
@@ -33,12 +31,6 @@ export default function Navbar() {
     await dispatch(logoutUser());
     navigate("/");
   };
-    // const { logout } = useContext(UserContext);
-
-    // const userLogout = () => {
-    //   logout();
-    //   navigate("/");
-    // };
 
   return (
     <Box sx={{ display: 'flex' }}>

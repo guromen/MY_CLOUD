@@ -6,9 +6,8 @@ import "./UserHome.css";
 
 const UserHome = ({selectedUser}) => {
   const dispatch = useDispatch();
-  // const error = useSelector(state => state.user.error);
+  const error = useSelector(state => state.user.error);
   const userId = selectedUser?.id || null;
-  // const files = useSelector((state) => selectUserFiles(state, userId));
   const files = useSelector((state) => selectUserFiles(state, selectedUser?.id));
   const currentUser = useSelector((state) => state.user.currentUser);
   const [file, setFile] = useState(null);
@@ -32,15 +31,14 @@ const UserHome = ({selectedUser}) => {
   const API = "files/";
 
   useEffect(() => {
-    console.log("USER_HOME useEffect>>>>>>>>=",userId, page);
     if (userId && !filesLoading) {
       dispatch(fetchUserFiles({ userId, page }));
     }
-  }, [userId, page, filesLoading]);
+  }, [userId, page]);
 
-  // useEffect(() => {
-  //   if (error) alert(error);
-  // }, [error]);
+  useEffect(() => {
+    if (error) alert(error);
+  }, [error]);
 
   const handleUpload = (e) => {
     e.preventDefault();
@@ -215,8 +213,8 @@ const UserHome = ({selectedUser}) => {
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={7}>
-              Всего файлов: {files.length} / {(totalSize / 1024).toFixed(1)} КБ
+            <td colSpan={7} className="table-footer-right">
+              Всего файлов: {files.length} / {(totalSize / (1024*1024)).toFixed(2)} Мб
             </td>
           </tr>
         </tfoot>
@@ -239,9 +237,8 @@ const UserHome = ({selectedUser}) => {
           >
             Вперёд →
           </button>
-        </div>
-    </div>
-    
+       </div>
+    </div>   
     
   );
 };
