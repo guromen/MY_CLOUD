@@ -101,7 +101,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-ROOT_URLCONF = 'auth.urls'
+ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {
@@ -119,7 +119,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'auth.wsgi.application'
+WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 # Database
@@ -149,7 +149,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "user": "300/hour",
+        "user": "1000/hour",
         "anon": "10/minute",
     },
     #пагинация
