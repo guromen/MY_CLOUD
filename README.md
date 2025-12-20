@@ -26,7 +26,7 @@
 -sql
 > \l - проверяем, что бд создалась
 
-Настраиваем в 'settings.py' DATABASES с переменными окружения:
+```python
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -41,47 +41,49 @@ DATABASES = {
 
 ## Переменные окружения (.env):
 
--DJANGO_SECRET_KEY = <Ваш секретный ключ>
-Описание:
+- **DJANGO_SECRET_KEY** = `<Ваш секретный ключ>`
+  - **Описание:**  
     Секретный ключ Django. Используется для:
-    шифрования cookies
-    CSRF-токенов
+    - шифрования cookies
+    - CSRF-токенов
 
--POSTGRES_DB = <имя БД>
-    Описание:
+- **POSTGRES_DB** = `<имя БД>`
+  - **Описание:**  
     Имя базы данных PostgreSQL.
-    
--POSTGRES_USER = <пользователь>
-    Описание:
+
+- **POSTGRES_USER** = `<пользователь>`
+  - **Описание:**  
     Пользователь PostgreSQL с доступом к базе.
 
--POSTGRES_PASSWORD = <пароль>
-    Описание:
+- **POSTGRES_PASSWORD** = `<пароль>`
+  - **Описание:**  
     Пароль пользователя PostgreSQL.
 
--POSTGRES_HOST = <хост>
-    Описание:
-    Хост базы данных.
-    localhost — при локальном запуске
+- **POSTGRES_HOST** = `<хост>`
+  - **Описание:**  
+    Хост базы данных.  
+    `localhost` — при локальном запуске  
     имя сервиса — при использовании Docker
 
--POSTGRES_PORT = <порт>
-    Описание:
-    Порт PostgreSQL (по умолчанию 5432).
+- **POSTGRES_PORT** = `<порт>`
+  - **Описание:**  
+    Порт PostgreSQL (по умолчанию `5432`).
 
--REACT_APP_API_URL = <http://localhost:5173>
-    Описание:
-    Базовый URL backend-API, к которому обращается frontend.
+- **REACT_APP_API_URL** = `http://localhost:5173`
+  - **Описание:**  
+    Базовый URL backend API, к которому обращается frontend.
 
--DJANGO_DEBUG = <true/false>
-    Описание:
-    Режим отладки Django.
-    True — для разработки
-    False — для продакшена
+- **DJANGO_DEBUG** = `<true / false>`
+  - **Описание:**  
+    Режим отладки Django.  
+    `True` — для разработки  
+    `False` — для продакшена
 
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
-    Описание:
-    Список разрешённых хостов (через запятую), с которых можно обращаться к серверу.
+- **DJANGO_ALLOWED_HOSTS** = `localhost,127.0.0.1`
+  - **Описание:**  
+    Список разрешённых хостов (через запятую),  
+    с которых можно обращаться к серверу.
+
 
 ## Настройка переменных окружения
 
