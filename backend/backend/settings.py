@@ -31,6 +31,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG')
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_HEADERS = [
@@ -56,15 +58,16 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True   
 
 # CSRF
-CSRF_COOKIE_SECURE = False     # True на проде (https)
-CSRF_COOKIE_HTTPONLY = False   # 
-SESSION_COOKIE_SECURE = False  # True на проде
+CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE_PROD")       # True на проде (https)
+CSRF_COOKIE_HTTPONLY = os.getenv("CSRF_COOKIE_HTTPONLY_PROD")   # True на проде
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE_PROD") # True на проде
+SESSION_COOKIE_HTTPONLY = True
 
 AUTH_COOKIE = {
-    "name": "auth_token",
-    "secure": False,
-    "httponly": True,
-    "samesite": "Lax",
+    "httponly": os.getenv("AUTH_COOKIE_HTTPONLY"),
+    "secure": os.getenv("AUTH_COOKIE_SECURE"),
+    "samesite": os.getenv("AUTH_COOKIE_SAMESITE"),
+    "max_age": int(os.getenv("AUTH_COOKIE_MAX_AGE", 60*60*24*7)),
 }
 
 # Application definition
@@ -199,6 +202,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

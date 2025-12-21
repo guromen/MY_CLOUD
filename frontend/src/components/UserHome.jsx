@@ -64,7 +64,13 @@ const UserHome = ({selectedUser}) => {
   };
 
   const handleReComment = (id, comment) => {
-    dispatch(updateFileComment({ fileId: id, comment }));
+    // dispatch(updateFileComment({ fileId: id, comment }));
+    dispatch(
+      updateFileComment({
+        fileId: id,
+        comment: comment.trim() === "" ? null : comment,
+      })
+    );
   };
 
   const copyLink = (fileUrl) => {
@@ -193,8 +199,12 @@ const UserHome = ({selectedUser}) => {
                   title="Редактировать комментарий"
                   onClick={() => {
                     const newComment = prompt("Новый комментарий:", f.comment);
-                    if (newComment) handleReComment(f.id, newComment);
-                  }}>
+
+                    if (newComment === null) return;
+
+                    handleReComment(f.id, newComment);
+                  }}
+                >
                   📝
                 </button>{" "}|{" "}
 

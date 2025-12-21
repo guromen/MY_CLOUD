@@ -19,6 +19,7 @@ from knox.views import LogoutAllView as KnoxLogoutView
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from django.conf import settings
 
 
 User = get_user_model()
@@ -47,10 +48,10 @@ class LoginViewset(viewsets.ViewSet):
                 response.set_cookie(
                     key='auth_token',
                     value=token,
-                    httponly=True,
-                    secure=False,      # True на https/проде
-                    samesite='Lax',    
-                    max_age=60 * 60 * 24 * 7  # 7 дней
+                    httponly=settings.AUTH_COOKIE["httponly"],
+                    secure=settings.AUTH_COOKIE["secure"],
+                    samesite=settings.AUTH_COOKIE["samesite"],
+                    max_age=settings.AUTH_COOKIE["max_age"],
                 )
 
                 return response
@@ -99,6 +100,10 @@ class UserFileViewSet(viewsets.ModelViewSet):
         else:
             # для обычного пользователя — только свои файлы
             return UserFile.objects.filter(user=user)
+
+    def partial_update(self, request, *args, **kwargs):
+            logger.info(f"[PATCH DATA] - {request.data}")
+            return super().partial_update(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         user = self.request.user

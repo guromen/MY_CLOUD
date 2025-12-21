@@ -62,7 +62,6 @@ class UserFile(models.Model):
     last_downloaded = models.DateTimeField(blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     public_uid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    public_link = models.CharField(max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         new_object = self.pk is None
@@ -72,12 +71,16 @@ class UserFile(models.Model):
         if not self.name:
             self.name = self.file.name
             logger.info(f"[NAME] Имя файла установлено {self.name}")
+            
+        super().save(*args, **kwargs)
+
         if new_object:
-            base_url = os.getenv("REACT_APP_API_URL", "").rstrip("/")
-            self.public_link = f"{base_url}/share/{self.public_uid}"
             logger.info(f"[UPLOAD] Новый файл от {self.user.email}: {self.file.name}")
             logger.info(f"[LINK] Публичная ссылка создана: {self.public_link}")
-        super().save(*args, **kwargs)
+
+    @property
+    def public_link(self):
+        return f"{settings.FRONTEND_URL.rstrip('/')}/share/{self.public_uid}"
 
     def __str__(self):
         return self.name or "Unnamed file"

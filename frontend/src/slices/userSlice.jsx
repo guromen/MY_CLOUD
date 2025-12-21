@@ -171,13 +171,16 @@ const userSlice = createSlice({
   },
   reducers: {},
   extraReducers: (builder) => {
-    const updateFileInUsers = (state, updatedFile) => {
-      state.users.forEach((user) => {
-        const idx = user.files.findIndex((f) => f.id === updatedFile.id);
-        if (idx !== -1) {
-          user.files[idx] = updatedFile;
-        }
-      });
+    const updateFileInUsers = (state, userId, fileId, patch) => {
+      if (state.currentUser?.id === userId) {
+        const file = state.currentUser.files?.find(f => f.id === fileId);
+        if (file) Object.assign(file, patch);
+      }
+      const u = state.users?.find(u => u.id === userId);
+      if (u) {
+        const file = u.files?.find(f => f.id === fileId);
+        if (file) Object.assign(file, patch);
+      }
     };
     builder
       .addCase(fetchUsers.pending, (state) => {
@@ -278,12 +281,29 @@ const userSlice = createSlice({
           user.files = user.files.filter((f) => f.id !== fileId);
         }
       })
-      .addCase(renameFile.fulfilled, (state, action) => {
-        updateFileInUsers(state, action.payload);
+      .addCase(renameFile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-
+      .addCase(renameFile.fulfilled, (state, action) => {
+        const { id, name, user } = action.payload;
+        updateFileInUsers(state, user, id, { name });
+      })
+      .addCase(renameFile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Ошибка переименования файла";
+      })
+      .addCase(updateFileComment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updateFileComment.fulfilled, (state, action) => {
-        updateFileInUsers(state, action.payload);
+        const { id, comment, user } = action.payload;
+        updateFileInUsers(state, user, id, { comment });
+      })
+      .addCase(updateFileComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Ошибка обновления комментария";
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.currentUser = null;
@@ -310,12 +330,10 @@ export default userSlice.reducer;
 export const selectUserFiles = (state, userId) => {
   const currentUser = state.user.currentUser;
 
-  // 🔹 если это текущий пользователь — берем из currentUser
   if (!userId || currentUser?.id === userId) {
     return currentUser?.files || [];
   }
 
-  // 🔹 иначе ищем в users
   const user = state.user.users.find((u) => u.id === userId);
   return user?.files || [];
 };
