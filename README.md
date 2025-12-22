@@ -138,11 +138,11 @@ DATABASES = {
 python manage.py migrate
 
 
-## Создание суперюзера, чтобы войти в админку:
+#Создание суперюзера, чтобы войти в админку:
 
 python manage.py createsuperuser
 
-#Развертыванию на reg.ru
+## Развертывание на reg.ru
 Аренда и подготовка сервера
 
 1. Арендуйте VPS на **reg.ru**  
@@ -188,7 +188,7 @@ python manage.py createsuperuser
 6. Миграции
   `python3 namage.py migrate` - применяем миграции
 
-7.Проверка запуска
+7. Проверка запуска
   `python3 manage.py runserver 0.0.0.0:8000` , вставляем в браузере наш IP:8000 - должно работать
 
 8. Systemd-сервис для Gunicorn
