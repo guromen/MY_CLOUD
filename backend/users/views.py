@@ -6,8 +6,7 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model, authenticate
 from knox.models import AuthToken
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.utils import timezone
 from rest_framework.decorators import action
 from django.http import FileResponse
@@ -17,7 +16,7 @@ import logging
 from rest_framework.throttling import UserRateThrottle
 from knox.views import LogoutAllView as KnoxLogoutView
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.http import JsonResponse
+from django.http import JsonResponse,  HttpResponse
 from rest_framework.decorators import api_view
 from django.conf import settings
 
@@ -123,6 +122,7 @@ class UserFileViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get']) 
     def download(self, request, pk=None):
         file_obj = self.get_object()
+        file_obj.download_count += 1
         file_obj.last_downloaded = timezone.now()
         file_obj.save()
         logger.info(f"[DOWNLOAD] Пользователь {request.user.email} скачал файл: {file_obj.name}")
@@ -132,9 +132,9 @@ class UserFileViewSet(viewsets.ModelViewSet):
 def file_preview(request, pk):
     file_obj = UserFile.objects.get(pk=pk)
 
-
+    file_obj.download_count += 1
     file_obj.last_downloaded = timezone.now()
-    file_obj.save(update_fields=["last_downloaded"])
+    file_obj.save(update_fields=["download_count","last_downloaded"])
 
 
     mime_type, _ = mimetypes.guess_type(file_obj.file.path)
@@ -150,10 +150,43 @@ class FileView(generics.GenericAPIView):
     throttle_classes = [FileUploadThrottle]
     queryset = UserFile.objects.all()
     def get(self, request, uid, *args, **kwargs):
-        file_obj = self.queryset.get(public_uid=uid)
-        logger.info(f"[PUBLIC LINK] Доступ к файлу {file_obj.name} через uid {uid}")
-        file = open(file_obj.file.path, 'rb')
-        return FileResponse(file)
+        try:
+            file_obj = self.queryset.get(public_uid=uid)
+            
+            if not file_obj.public_access_enabled:
+                return HttpResponse(
+                    """
+                    <html>
+                    <body style="text-align:center;margin-top:80px;font-family:sans-serif">
+                        <h2>Доступ запрещён</h2>
+                        <p>Владелец файла отключил публичную ссылку</p>
+                    </body>
+                    </html>
+                    """,
+                    status=403
+                )
+                
+            if file_obj.public_access_expires and timezone.now() > file_obj.public_access_expires:
+                return HttpResponse(
+                    """
+                    <html>
+                    <body style="text-align:center;margin-top:80px;font-family:sans-serif">
+                        <h2>Истек срок действия ссылки</h2>
+                    </body>
+                    </html>
+                    """,
+                    status=403
+                )
+            
+            file_obj.download_count += 1
+            file_obj.last_downloaded = timezone.now()
+            file_obj.save(update_fields=["download_count", "last_downloaded"])
+
+            logger.info(f"[PUBLIC DOWNLOAD] {file_obj.name} (uid={uid}) скачан {file_obj.download_count} раз")
+            
+            return FileResponse(open(file_obj.file.path, 'rb'))
+        except UserFile.DoesNotExist:
+            return Response({"error": "Файл не найден"}, status=404)
         
 class UserViewset(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]

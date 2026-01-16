@@ -147,6 +147,17 @@ export const logoutUser = createAsyncThunk(
     }
   }
 );
+export const linkPublicAccess = createAsyncThunk(
+  "user/LinkPublicAccess",
+  async ({ fileId, data }, { rejectWithValue }) => {
+    try {
+      const res = await AxiosInstance.patch(`files/${fileId}/`, data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data);
+    }
+  }
+);
 
 const userSlice = createSlice({
   name: "user",
@@ -320,6 +331,23 @@ const userSlice = createSlice({
           next: null,
           previous: null,
         };
+      })
+      .addCase(linkPublicAccess.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(linkPublicAccess.fulfilled, (state, action) => {
+        const { id, user, public_access_enabled, public_access_expires, download_count } = action.payload;
+
+        updateFileInUsers(state, user, id, {
+          public_access_enabled,
+          public_access_expires,
+          download_count,
+        });
+      })
+      .addCase(linkPublicAccess.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Ошибка публичной ссылки";
       });
       
   },

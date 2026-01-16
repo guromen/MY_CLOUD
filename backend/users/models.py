@@ -62,6 +62,9 @@ class UserFile(models.Model):
     last_downloaded = models.DateTimeField(blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     public_uid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    public_access_enabled = models.BooleanField(default=False)
+    public_access_expires = models.DateTimeField(null=True, blank=True)
+    download_count = models.PositiveIntegerField(default=0)
 
     def save(self, *args, **kwargs):
         new_object = self.pk is None

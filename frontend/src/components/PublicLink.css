@@ -1,0 +1,46 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal {
+  position: relative;
+  background: white;
+  padding: 20px;
+  width: 360px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal input[type="text"],
+.modal input[type="datetime-local"] {
+  width: 100%;
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.copy-btn {
+  background-color: #FFD700;
+  margin-left: 15px;
+  border-radius: 8px; 
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #000;
+}

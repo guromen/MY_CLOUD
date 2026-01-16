@@ -3,6 +3,7 @@ import AxiosInstance from "./AxiosInstance";
 import { useDispatch, useSelector } from "react-redux";
 import {fetchUserFiles, uploadFile, deleteFile, selectUserFiles, renameFile, updateFileComment} from "../slices/userSlice";
 import "./UserHome.css";
+import PublicLink from "./PublicLink";
 
 const UserHome = ({selectedUser}) => {
   const dispatch = useDispatch();
@@ -17,17 +18,8 @@ const UserHome = ({selectedUser}) => {
   const [page, setPage] = useState(1);
   const pagination = useSelector(state => state.user.filesPagination);
   const filesLoading = useSelector(state => state.user.filesLoading);
-  
-  const mimeTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "application/zip",
-    "application/x-zip-compressed",
-    "text/html", 
-  ];
-
+  const [linkModalFile, setLinkModalFile] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL;
   const API = "files/";
 
   useEffect(() => {
@@ -64,7 +56,6 @@ const UserHome = ({selectedUser}) => {
   };
 
   const handleReComment = (id, comment) => {
-    // dispatch(updateFileComment({ fileId: id, comment }));
     dispatch(
       updateFileComment({
         fileId: id,
@@ -73,10 +64,6 @@ const UserHome = ({selectedUser}) => {
     );
   };
 
-  const copyLink = (fileUrl) => {
-    navigator.clipboard.writeText(fileUrl);
-    alert("Ссылка скопирована!");
-  };
   //скачивание
   const handleView = (id, filename) => {
   AxiosInstance.get(`files/${id}/download/`, { responseType: 'blob' })
@@ -103,15 +90,10 @@ const UserHome = ({selectedUser}) => {
       <form onSubmit={handleUpload} className="upload-form">
         <input
           type="file"
+          accept=".pdf,.jpg,.jpeg,.png,.webp,.zip, .html"
           onChange={(e) => {
             const selected = e.target.files[0];
             if (!selected) return;
-
-            if (!mimeTypes.includes(selected.type)) {
-              alert("Недопустимый тип файла!");
-              e.target.value = "";
-              return;
-            }
 
             setFile(selected);
           }}
@@ -137,6 +119,7 @@ const UserHome = ({selectedUser}) => {
             <th>Имя</th>
             <th>Комментарий</th>
             <th>Размер</th>
+            <th>Скачивания</th>
             <th>Дата загрузки</th>
             <th>Последнее скачивание</th>
             <th>Действия</th>
@@ -160,6 +143,7 @@ const UserHome = ({selectedUser}) => {
               <td>{f.name}</td>
               <td>{f.comment}</td>
               <td>{(f.size / 1024).toFixed(1)} КБ</td>
+              <td>{f.download_count}</td>
               <td>{new Date(f.uploaded_at).toLocaleString()}</td>
               <td>{f.last_downloaded ? new Date(f.last_downloaded).toLocaleString() : "-"}</td>
               <td>
@@ -172,17 +156,17 @@ const UserHome = ({selectedUser}) => {
   
                 <a
                   title="Просмотр"
-                  href={`http://localhost:8000/files/${f.id}/preview/`}
+                  href={`${API_URL}/files/${f.id}/preview/`}
                   target="_blank"
                   rel="noreferrer"
                 >
                   👁️ 
                 </a>{" "}|{" "}
 
-                <button 
-                  title="Копировать ссылку" 
-                  onClick={() => copyLink(`http://localhost:8000/api/share/${f.public_uid}/`)}
-                  >
+                <button
+                  title="Публичная ссылка"
+                  onClick={() => setLinkModalFile(f.id)}
+                >
                   🔗
                 </button>{" "}|{" "}
 
@@ -223,7 +207,7 @@ const UserHome = ({selectedUser}) => {
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={7} className="table-footer-right">
+            <td colSpan={8} className="table-footer-right">
               Всего файлов: {files.length} / {(totalSize / (1024*1024)).toFixed(2)} Мб
             </td>
           </tr>
@@ -248,6 +232,13 @@ const UserHome = ({selectedUser}) => {
             Вперёд →
           </button>
        </div>
+       {linkModalFile && (
+          <PublicLink
+            fileId={linkModalFile}
+            userId={userId}
+            onClose={() => setLinkModalFile(null)}
+          />
+        )}
     </div>   
     
   );

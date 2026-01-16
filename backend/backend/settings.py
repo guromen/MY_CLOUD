@@ -47,14 +47,10 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
     "cookie",
 ]
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
 
-]
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 
-]
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173').split(',')
 CORS_ALLOW_CREDENTIALS = True   
 
 # CSRF
