@@ -1,6 +1,6 @@
 import "./PublicLink.css";
 import { useDispatch, useSelector } from "react-redux";
-import { linkPublicAccess } from "../slices/userSlice";
+import { enablePublicLink, disablePublicLink  } from "../slices/userSlice";
 
 const PublicLink = ({ fileId, userId, onClose }) => {
   const dispatch = useDispatch();
@@ -22,26 +22,24 @@ const PublicLink = ({ fileId, userId, onClose }) => {
   const publicUrl = `${API_URL}/api/share/${file.public_uid}/`;
 
   const toggleAccess = () => {
-    dispatch(
-      linkPublicAccess({
+    if (file.public_access_enabled) {
+      dispatch(disablePublicLink(file.id));
+    } else {
+      dispatch(enablePublicLink({
         fileId: file.id,
-        data: {
-          public_access_enabled: !file.public_access_enabled,
-        },
-      })
-    );
+        expires: file.public_access_expires,
+      }));
+    }
   };
 
-  const updateExpires = (value) => {
-    dispatch(
-      linkPublicAccess({
-        fileId: file.id,
-        data: {
-          public_access_expires: value || null,
-        },
-      })
-    );
-  };
+   const updateExpires = (value) => {
+      dispatch(
+        enablePublicLink({
+          fileId: file.id,
+          expires: value || null,
+        })
+      );
+    };
 
   const copyLink = () => {
     navigator.clipboard.writeText(publicUrl);

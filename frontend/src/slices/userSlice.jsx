@@ -147,11 +147,27 @@ export const logoutUser = createAsyncThunk(
     }
   }
 );
-export const linkPublicAccess = createAsyncThunk(
-  "user/LinkPublicAccess",
-  async ({ fileId, data }, { rejectWithValue }) => {
+export const enablePublicLink = createAsyncThunk(
+  "user/enablePublicLink",
+  async ({ fileId, expires }, { rejectWithValue }) => {
     try {
-      const res = await AxiosInstance.patch(`files/${fileId}/`, data);
+      const res = await AxiosInstance.post(
+        `files/${fileId}/public_enable/`,
+        { expires }
+      );
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data);
+    }
+  }
+);
+export const disablePublicLink = createAsyncThunk(
+  "user/disablePublicLink",
+  async (fileId, { rejectWithValue }) => {
+    try {
+      const res = await AxiosInstance.post(
+        `files/${fileId}/public_disable/`
+      );
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data);
@@ -332,12 +348,19 @@ const userSlice = createSlice({
           previous: null,
         };
       })
-      .addCase(linkPublicAccess.pending, (state) => {
+      .addCase(enablePublicLink.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(linkPublicAccess.fulfilled, (state, action) => {
-        const { id, user, public_access_enabled, public_access_expires, download_count } = action.payload;
+      .addCase(enablePublicLink.fulfilled, (state, action) => {
+        state.loading = false;
+        const {
+          id,
+          user,
+          public_access_enabled,
+          public_access_expires,
+          download_count,
+        } = action.payload;
 
         updateFileInUsers(state, user, id, {
           public_access_enabled,
@@ -345,9 +368,30 @@ const userSlice = createSlice({
           download_count,
         });
       })
-      .addCase(linkPublicAccess.rejected, (state, action) => {
+      .addCase(enablePublicLink.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Ошибка публичной ссылки";
+        state.error = action.payload || "Ошибка включения публичной ссылки";
+      })
+      .addCase(disablePublicLink.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(disablePublicLink.fulfilled, (state, action) => {
+        state.loading = false;
+        const {
+          id,
+          user,
+          public_access_enabled,
+        } = action.payload;
+
+        updateFileInUsers(state, user, id, {
+          public_access_enabled,
+          public_access_expires: null,
+        });
+      })
+      .addCase(disablePublicLink.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Ошибка отключения публичной ссылки";
       });
       
   },

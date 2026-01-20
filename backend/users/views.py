@@ -118,6 +118,21 @@ class UserFileViewSet(viewsets.ModelViewSet):
         serializer.save(user=user)
         logger.info(f"[UPLOAD] Пользователь {user.email} загрузил файл")
 
+    @action(detail=True, methods=['post'])
+    def public_enable(self, request, pk=None):
+        file = self.get_object()
+        file.public_access_enabled = True
+        file.public_access_expires = request.data.get("expires")
+        file.save(update_fields=["public_access_enabled", "public_access_expires"])
+        return Response(UserFileSerializer(file).data)
+    
+    @action(detail=True, methods=['post'])
+    def public_disable(self, request, pk=None):
+        file = self.get_object()
+        file.public_access_enabled = False
+        file.save(update_fields=["public_access_enabled"])
+        return Response(UserFileSerializer(file).data)  
+
    #скачивание файла
     @action(detail=True, methods=['get']) 
     def download(self, request, pk=None):
@@ -184,7 +199,10 @@ class FileView(generics.GenericAPIView):
 
             logger.info(f"[PUBLIC DOWNLOAD] {file_obj.name} (uid={uid}) скачан {file_obj.download_count} раз")
             
-            return FileResponse(open(file_obj.file.path, 'rb'))
+            response = FileResponse(open(file_obj.file.path, 'rb'))
+            response['Content-Disposition'] = f'attachment; filename="{file_obj.name}"'
+            return response
+        
         except UserFile.DoesNotExist:
             return Response({"error": "Файл не найден"}, status=404)
         
